@@ -35,7 +35,7 @@
 - So I tried again, but this time I had the terminal on my second monitor and made sure to use the “ctrl+shft+c” and “ctrl+v” to copy/paste as fast as humanly possible. The resulting “too slow” meant that it wouldn’t be as easy as hashing the plaintext by hand- Therefore scripting would need to be implemented. 
 
 ## Creating the exploit.py script
-- Inspecting the elements on the page resulted in the discovery that the form indeed uses a GET/POST logic- also showing the location of the plaintext within the “<h3>” HTML tags. 
+- Inspecting the elements on the page resulted in the discovery that the form indeed uses a GET/POST logic- also showing the location of the plaintext within the h3 HTML tags. 
 
 ![img](https://github.com/elisims/emdeefiveforlife/raw/main/images/4.png)
   
@@ -62,7 +62,9 @@ print(plaintext)
 
 - To  ensure  the  underlying  fundamentals  of  the  script  were  working  correctly,  I output  the  variables  “soup”  and  “plaintext”  to  observe  the  result.
   
-- As  expected,  “soup”  printed  the  HTML  output  that  BeautifulSoup  had  been  givenAnd  “plaintext”  printed  the  parsed  “<h3>”  tag  from  bs4. 
+![img](https://github.com/elisims/emdeefiveforlife/raw/main/images/5.png)
+  
+- As  expected,  “soup”  printed  the  HTML  output  that  BeautifulSoup  had  been  givenAnd  “plaintext”  printed  the  parsed  h3 tag  from  bs4. 
 - Next,  I  wrote  in  the  functionality  to  hash  the  extracted  plaintext  using  MD5.
   
 ```python
@@ -86,3 +88,48 @@ print(plaintext)
   ciphertext  =  hashlib.md5(plaintext).hexdigest() 
   print(ciphertext)
 ```
+
+- The  output  was  then  tested  by  hand  against  the  same  plaintext  being  hashed  by the  MD5sum  command  used  in  the  first  part  of  the  writeup.
+  
+![img](https://github.com/elisims/emdeefiveforlife/raw/main/images/6.png)
+  
+- The resulting MD5 hashed ciphertexts were identical- Meaning the final functionality could be implemented into the python script. I needed to POST the resulting ciphertext into the form submission within the same session so that the “TOO SLOW” result would not be returned.
+  
+```python
+  import requests 
+  import hashlib from bs4 
+  import BeautifulSoup 
+  
+  req = requests.session() 
+  url = "http://139.59.190.165:30450/" 
+  
+  getReq = req.get(url) 
+  html = getReq.content  
+  
+  soup = BeautifulSoup(html, 'html.parser') 
+  plaintext = soup.h3.get_text().encode('utf-8') 
+  
+  #Testing output/parse of bs4 #print(soup) 
+  #print(plaintext)  
+  
+  ciphertext = hashlib.md5(plaintext).hexdigest()  
+  
+  #Testing ciphertext against manual MD5 hash 
+  #print(ciphertext)  
+  
+  data = dict(hash = ciphertext) 
+  postResult = req.post(url = url, data = data)  
+  
+  print("Result:", postResult.text)
+```
+
+![img](https://github.com/elisims/emdeefiveforlife/raw/main/images/7.png)
+  
+- The  result  after  running  exploit.py  was  the  HTB  flag  “HTB{*************}”. 
+
+```python
+<p align='center'>HTB{N1**********!}</p><center><form action="" method="post">
+```
+  
+## Conclusion 
+- This  HTB  challenge  was  an  AMAZING  confidence  and  morale  booster  for  me-  As  I  learned how  to  script  the  automatic  parsing  of  GET/POST  requests  while  also  hashing  and returning  that  result  to  accomplish  obtain  the  flag.  It  was  challenging,  but  also  had  many resources  to  help  me  get  through  the  toughest  parts  where  I  got  stuck. I  would  recommend  this  to  any  developer  who  is  looking  to  learn  about  or  refresh  their scripting  skills.
